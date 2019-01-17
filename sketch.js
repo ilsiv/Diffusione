@@ -12,6 +12,8 @@ let dB = 0.5;
 let feed = 0.055;
 let k = 0.062;
 
+let canvas;
+
 function preload() {
   img = loadImage('hopper.jpg');
 }
@@ -19,46 +21,48 @@ function preload() {
 function setup() {
 
   img.resize(0, 600);
-  var canvas = createCanvas(img.width, img.height);
-  // var canvas = createCanvas(400, 400);
+  canvas = createCanvas(img.width, img.height);
   canvas.id('sketch-container');
   image(img, 0, 0);
+
   grid = [];
   next = [];
   loadPixels();
-  for (let i = 0; i < width; i++) {
+  for (let i = 0; i < img.width; i++) {
     grid[i] = [];
     next[i] = [];
-    for (let j = 0; j < height; j++) {
-      let index = (i + j * width) * 4;
-      let tmp = (pixels[index + 0] + pixels[index + 1] + pixels[index + 2]) / 3;
-      let vv =constrain(tmp,0,1);
-      if (tmp >200) {
+    for (let j = 0; j < img.height; j++) {
+      let index = (i + j * img.width) * 4;
+      let tmp = pixels[index + 0];
+      let tmp2 = pixels[index + 1];
+      // let tmp = random(0, 255);
+      // let vv = constrain(tmp, 0, 1);
+      grid[i][j] = {
+        a: 0,
+        b: 0
+      };
+      next[i][j] = {
+        a: 0,
+        b: 0
+      };
+
+      if (tmp >150) {
         grid[i][j] = {
-          a: vv,
+          a: 1,
           b: 0
         };
         next[i][j] = {
-          a: vv,
+          a: 1,
           b: 0
         };
-      } else if (tmp <30) {
+      } else if (tmp2 > 50) {
         grid[i][j] = {
           a: 0,
-          b: vv
+          b: 1
         };
         next[i][j] = {
           a: 0,
-          b: vv
-        };
-      } else {
-        grid[i][j] = {
-          a: 0,
-          b: 0
-        };
-        next[i][j] = {
-          a: 0,
-          b: 0
+          b: 1
         };
       }
     }
@@ -79,17 +83,17 @@ function draw() {
   update();
 
   loadPixels();
-  for (let i = 1; i < width - 1; i++) {
-    for (let j = 1; j < height - 1; j++) {
-      let pix = (i + j * width) * 4;
+  for (let i = 1; i < img.width - 1; i++) {
+    for (let j = 1; j < img.height - 1; j++) {
+      let pix = (i + j * img.width) * 4;
       let a = next[i][j].a;
       let b = next[i][j].b;
       let c = floor((a - b) * 255);
       c = constrain(c, 0, 255);
-      // pixels[pix + 0] = c;
-      // pixels[pix + 1] = c;
+      // pixels[pix + 0] = a;
+      // pixels[pix + 1] = b;
       // pixels[pix + 2] = c;
-      pixels[pix + 3] = 255-c;
+      pixels[pix + 3] = 255 - c;
     }
   }
   updatePixels();
@@ -108,25 +112,21 @@ function mousePressed() {
 }
 
 function update() {
-  for (let i = 1; i < width - 1; i++) {
-    for (let j = 1; j < height - 1; j++) {
+  for (let i = 1; i < img.width - 1; i++) {
+    for (let j = 1; j < img.height - 1; j++) {
       let a = grid[i][j].a;
       let b = grid[i][j].b;
-      // next[i][j].a = 1;
       next[i][j].a = a +
         (dA * laplaceA(i, j)) -
         (a * b * b) +
         (feed * (1 - a));
 
-      // next[i][j].b = 0;
       next[i][j].b = b +
         (dB * laplaceB(i, j)) +
         (a * b * b) -
         ((k + feed) * b);
       next[i][j].a = constrain(next[i][j].a, 0, 1);
       next[i][j].b = constrain(next[i][j].b, 0, 1);
-      // next[i][j].a = round(next[i][j].a);
-      // next[i][j].b = round(next[i][j].b);
     }
   }
   swap();
