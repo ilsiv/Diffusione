@@ -25,7 +25,7 @@ img = loadImage("hopper.jpg");
 void setup() {
   
   //frameRate(1);
-  filter(THRESHOLD);
+filter(THRESHOLD);  
   image(img, 0, 0);
 
   grid = new Diff[width][height];
